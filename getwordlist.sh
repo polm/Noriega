@@ -6,4 +6,4 @@
 #Drops ' (cat's = cats)
 #Drops - (twenty-something = twentysomething)
 
-tr '\n' ' ' | tr -d ',\"-\(\)\.\?\!\>\<'\' | tr ' ' '\n' | sed -e '/^$/d' -e '/--/d' | sort | uniq 
+tr '\n' ' ' | tr -d ',\"\(\)\.\?\!\>\<\:\;\t\-'\' | tr ' ' '\n' | sort | uniq | sed -e '/^$/d' -e '/--/d' -e '/^.$/d'

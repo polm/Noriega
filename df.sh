@@ -13,7 +13,7 @@ FILES="$3"
 
 while read FILE;
 do
-	OCCURS=$(tr -d ',\(\)\"\.' < $FILE | tr '\n' ' ' | grep $WORD | wc -l | cut -f1)
+	OCCURS=$(tr -d ',\(\)\"\.\?\!' < $FILE | tr ' ' '\n' | grep -w "$WORD" | wc -l | cut -f1)
 	if (( OCCURS >= K ))
 	then ((COUNT++))
 	fi
