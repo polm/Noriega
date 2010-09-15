@@ -1,25 +1,21 @@
 #!/bin/bash
 # Probability of two Noriegas and sundry.
 
-df () {
-#args:
-#1. k
-#2. word to look for
-#??? filenames.
-}
-
 #1. get words
 
 #2. Calc Test/Hist results.
 
-for w in WORDS;
+WORDS="$1"
+FILES="$2"
+
+for w in $WORDS;
 do
 	TESTCOUNT=0
 	HISTCOUNT=0
 	BOTHCOUNT=0
 	NEITHERCOUNT=0
 
-	for f in FILES;
+	for f in $FILES;
 	do
 		THISHIST=0
 		THISTEST=0
@@ -30,10 +26,10 @@ do
 		if [ -n "$(tail -n +2 "$f" | grep $w)" ]
 		then THISTEST=1
 		fi
-		if [ $THISHIST && $THISTEST ]; then ((BOTHCOUNT++)); fi;
-		if [ $THISHIST && !$THISTEST ]; then ((HISTCOUNT++)); fi;
-		if [ !$THISHIST && $THISTEST ]; then ((TESTCOUNT++)); fi;
-		if [ !$THISHIST && !$THISTEST ]; then ((NEITHERCOUNT++)); fi;
+		if [[ $THISHIST == 1 && $THISTEST == 1 ]]; then ((BOTHCOUNT++)); fi;
+		if [[ $THISHIST == 1 && $THISTEST == 0 ]]; then ((HISTCOUNT++)); fi;
+		if [[ $THISHIST == 0 && $THISTEST == 1 ]]; then ((TESTCOUNT++)); fi;
+		if [[ $THISHIST == 0 && $THISTEST == 0 ]]; then ((NEITHERCOUNT++)); fi;
 	done
 
 	#output stats
