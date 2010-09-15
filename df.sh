@@ -19,4 +19,4 @@ do
 	fi
 done < $FILES
 
-echo $COUNT " " $WORD
+echo -e $COUNT "\t" $WORD
