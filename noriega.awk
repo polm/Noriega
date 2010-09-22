@@ -23,9 +23,8 @@ BEGIN {
 			test=0;
 			while (getline curline < file){
 				line++;
-				pattern=word 
-				if (line == 1 && curline ~ pattern) {hist=1; }
-
+				pattern="\\y"word "\\y"
+				if (line == 1 && curline ~ pattern) {hist=1; continue}
 				if (line != 1 && curline ~ pattern) {test=1; break}
 			}
 			close(file)
