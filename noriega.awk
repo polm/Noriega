@@ -47,11 +47,12 @@ BEGIN {
 		posap=-1
 		negap=-1
 		prior=-1
+		$0 = words[w];
 		if ($2 + $3 > 0) posap= $2 / ($2 + $3)
 		if ($2 + $3 > 0) negap= $4 / ($4 + $5)
 		prior= $5 / total
 		if(prior > 0) ratio = posap / prior
-		if (posap < 0 || negap < 0 || prior < 0) {print "woops"; continue;}
+		if (posap < 0 || negap < 0 || prior < 0)  continue;
 		print ratio " " prior " " posap " " negap " " w
 	}
 		print "total words: " total

@@ -8,6 +8,6 @@
 find "$1" -type f > /tmp/$$.files
 ./getwordlist.sh /tmp/$$.files > /tmp/$$.words
 awk -v wordlist="/tmp/$$.words" -v filelist="/tmp/$$.files" -f noriega.awk | \
-sort -n 
+sort -n -r
 
 
