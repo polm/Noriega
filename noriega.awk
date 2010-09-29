@@ -1,45 +1,59 @@
-function df (word, k, filelist) {
-	#calculates number of documents in which 
-	#word appears at least k times
-	count=0
-
-}
-
 BEGIN {
-	while (getline < "wordlist"){
-		words[$0]="0 0 0 0 0 0" #initialize!
+	total=0
+	while (getline < wordlist){
+		words[$0]="0 0 0 0 0" #initialize!
+		occ[$0]=0;
+		hist[$0]=0;
+		test[$0]=0;
 	}
 
-	while (getline < "filelist"){
+	while (getline < filelist){
 		files[$0]=""
 	}
 
-	for (word in words){
+	for (file in files){
 		#calc A,B,C,D
-		$0=words[word]
-		for (file in files){
 			line=0
-			hist=0;
-			test=0;
-			while (getline curline < file){
+			while (getline curline < file) {
 				line++;
-				pattern="\\y"word "\\y"
-				if (line == 1 && curline ~ pattern) {hist=1; continue}
-				if (line != 1 && curline ~ pattern) {test=1; break}
+				split(curline, curarray, "\\W");
+				for (x in curarray) {
+					total++;
+					occ[curarray[x]]++;
+					if (line==1) hist[curarray[x]]=1;
+					else test[curarray[x]]=1;
+					#print curarray[x]" "hist[curarray[x]]" " test[curarray[x]]
+				}
 			}
 			close(file)
 			#print hist test
-			if(hist && test) $1++;
-			if(hist && !test) $2++;
-			if(!hist && test) $3++;
-			if(!hist && !test) $4++;
-			words[word]=$0
+			for (word in words){
+				$0=words[word]
+				if(hist[word] && test[word]) $1++;
+				if(hist[word] && !test[word]) $2++;
+				if(!hist[word] && test[word]) $3++;
+				if(!hist[word] && !test[word]) $4++;
+				hist[word] = 0;
+				test[word] = 0;
+				$5 = occ[word];
+
+				words[word]=$0
+			}
 
 		#calc df_whatever
 		}
-	}
 
-	for (w in words)
-		print w " " words[w]
+	for (w in words){
+		posap=-1
+		negap=-1
+		prior=-1
+		if ($2 + $3 > 0) posap= $2 / ($2 + $3)
+		if ($2 + $3 > 0) negap= $4 / ($4 + $5)
+		prior= $5 / total
+		if(prior > 0) ratio = posap / prior
+		if (posap < 0 || negap < 0 || prior < 0) {print "woops"; continue;}
+		print ratio " " prior " " posap " " negap " " w
+	}
+		print "total words: " total
 }
 
