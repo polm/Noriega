@@ -14,10 +14,12 @@ BEGIN {
 	for (file in files){
 		#calc A,B,C,D
 			line=0
+			curwords[""] = "";
 			while (getline curline < file) {
 				line++;
 				split(curline, curarray, "\\W");
 				for (x in curarray) {
+					curwords[curarray[x]]=0; #This word is in this document.
 					total++;
 					occ[curarray[x]]++;
 					if (line==1) hist[curarray[x]]=1;
@@ -27,7 +29,7 @@ BEGIN {
 			}
 			close(file)
 			#print hist test
-			for (word in words){
+			for (word in curwords){
 				$0=words[word]
 				if(hist[word] && test[word]) $1++;
 				if(hist[word] && !test[word]) $2++;
