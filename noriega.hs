@@ -6,6 +6,7 @@ import Text.Printf
 import System.Environment
 import qualified Data.Map as M
 import System.Exit
+import qualified System.IO.Strict as S
 import System (getArgs)
 
 data Stats = Stats Int Int Int Int Int -- HT H~T ~HT ~H~T occ.
@@ -70,5 +71,5 @@ main = do
 	args <- getArgs
 	let filelist = args !! 0 
 		in do files <- readFile filelist
-		      contents <- mapM readFile (lines files)
+		      contents <- mapM S.readFile (lines files)
 		      print $ doAll contents M.empty
