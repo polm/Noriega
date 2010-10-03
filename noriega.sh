@@ -8,7 +8,7 @@ PATH="$PATH:/u/polm/noriega"
 # Pump results to stdout.
 find "$1" -type f > /tmp/$$.files
 getwordlist.sh /tmp/$$.files > /tmp/$$.words
-awk -v wordlist="/tmp/$$.words" -v filelist="/tmp/$$.files" -f /u/polm/noriega/noriega.awk | \
-sort -n -r
+noriega /tmp/$$.files /tmp/$$.words > output.$1
+#sort -n -r
 
 
