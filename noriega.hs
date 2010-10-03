@@ -25,6 +25,7 @@ io f = interact (unlines . f . lines)
 --showln  = (++ "\n") . show
 
 -- Take in a list of words, put them in the map
+-- NOTE: This should not be used.
 initMap :: [String] -> WordMap
 initMap s = M.fromList $ 
 		map (\x -> (x, Stats 0 0 0 0 0)) s
@@ -49,7 +50,7 @@ updateMap :: [String] -> [String] -> [String] -> WordMap -> WordMap
 updateMap _ _ [] m = m
 updateMap h t (w:wl) m = let ws = M.lookup w m
 		    	    in case ws of
-				Nothing -> updateMap h t wl m 
+				Nothing -> updateMap h t wl (M.insert w (newStats w (Stats 0 0 0 0 0) h t) m)
 				_ -> updateMap h t wl (M.insert w (newStats w (fromJust ws) h t) m)
 
 
@@ -68,8 +69,6 @@ main :: IO ()
 main = do
 	args <- getArgs
 	let filelist = args !! 0 
-	    wordlist = args !! 1
 		in do files <- readFile filelist
-		      words <- readFile wordlist
 		      contents <- mapM readFile (lines files)
-		      print $ doAll contents (initMap $ lines $ words)
+		      print $ doAll contents M.empty
