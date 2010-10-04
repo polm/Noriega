@@ -9,12 +9,14 @@
 typedef struct word word;
 struct word {
 	UT_string* w;
+	char* s;
 	unsigned int ht;
 	unsigned int t;
 	unsigned int h;
 	/*it won't be checked for articles it doesn't appear in*/
 	unsigned int occ; /*will not overflow - GIGAword*/
 	UT_hash_handle hh;
+	UT_hash_handle hh2; /*for the temp*/
 };
 
 
@@ -43,7 +45,7 @@ void hash_update();
 void temp_hash_update(char*,int);
 
 int main(int argc, char *argv[]){
-	if(argc != 1){
+	if(argc != 2){
 		printf("usage: \n\tnoriega filelist\n");
 		exit(1);
 	}
@@ -56,10 +58,15 @@ int main(int argc, char *argv[]){
 
 	word *allwords = NULL; /*prime hash*/
 	char line[LINE_SIZE]; 
+	unsigned int filecount = 0;
+	unsigned int wordcount = 0;
 	while(1){ /*filename getting loop*/
 		if(feof(file)) break;
 		fgets(line, LINE_SIZE, file);
+		line[strlen(line)-1] = '\0'; /*nuke newlines*/
+		//printf("file:%s\n", line);
 		FILE *article = fopen (line, "r");
+		filecount++;
 		if(article == NULL){
 			perror("Problem opening article!");
 			continue;
@@ -68,14 +75,20 @@ int main(int argc, char *argv[]){
 
 		fgets(line, LINE_SIZE, article);
 		char *tw;
-		while((tw = strtok(line, " ,.\":;!?")) != NULL){
+		tw = strtok(line, " ,.\":;!?");
+		do {
+			wordcount++;
 			temp_hash_update(tw, HIST);
-		}
+		} while((tw = strtok(NULL, " ,.\":;!?")) != NULL);
+
 		while(!feof(article)){
 			fgets(line, LINE_SIZE, article);
-			while((tw = strtok(line, " ,.\":;!?")) != NULL){
+			tw = strtok(line, " ,.\":;!?");
+			do {
+			if(tw == "\n") continue;
+			wordcount++;
 			temp_hash_update(tw, TEST);
-			}
+			} while((tw = strtok(NULL, " ,.\":;!?")) != NULL);
 		}
 		/*finished the article.*/
 		fclose(article);
@@ -87,12 +100,18 @@ int main(int argc, char *argv[]){
 	word *cw;
 	while(words){
 		cw = words;
-		printf("%d\t%d\t%d\t%d\t%s\n",
+		double posapp = (0 != cw->h + cw->ht ) ? cw->ht / (cw->h + cw->ht) : -1;
+		double prior = (double)cw->occ / wordcount;
+		double ec = (0 != posapp) ? prior / posapp : -1;
+		printf("%.10f\t%.8f\t%.8f\t%u\t%u\t%u\t%u\t%s\n",
+				ec,
+				posapp,
+				prior,
 				cw->ht,
 				cw->h,
 				cw->t,
 				cw->occ,
-				utstring_body(cw->w));
+				cw->s);
 		HASH_DEL(words, cw);
 		utstring_free(cw->w);
 		free(cw);
@@ -106,26 +125,27 @@ void hash_update(){
 	while (twords){
 		cw = twords;
 		word *tw;
-		HASH_FIND_STR(words, utstring_body(cw->w), tw);
+		HASH_FIND(hh, words, cw->s, strlen(cw->s), tw);
 		if(tw){
 			/*exists; update it*/
 			if(cw->h && cw->t) tw->ht += 1;
 			else if (cw->h) tw->h += 1;
 			else if (cw->t) tw->t += 1;
 			tw->occ += cw->occ;
-			HASH_DEL(twords, cw);
+			HASH_DELETE(hh2, twords, cw);
 			utstring_free(cw->w);
 			free(cw);
 		}
 		else {
 			/*not there; add it*/
-			HASH_ADD_KEYPTR(hh, words, utstring_body(cw->w), utstring_len(cw->w), cw);
+			HASH_ADD_KEYPTR(hh, words, cw->s, strlen(cw->s), cw);
+			cw->ht = 0;
 			if(cw->h && cw->t) {
 				cw->ht = 1;
 				cw->h = 0;
 				cw->t = 0;
 			}
-			HASH_DEL(twords, cw);
+			HASH_DELETE(hh2, twords, cw);
 		}
 	}
 	
@@ -135,7 +155,7 @@ void temp_hash_update(char* w, int stat){
 	/*is this word in the hash?*/
 	word *aword;
 
-	HASH_FIND_STR(twords, w, aword);
+	HASH_FIND(hh2, twords, w, strlen(w), aword);
 	if(aword == NULL){
 		/*didn't have it; create it*/
 		aword = malloc(sizeof(word));
@@ -146,7 +166,8 @@ void temp_hash_update(char* w, int stat){
 		utstring_new(s);
 		utstring_printf(s, "%s", w);
 		aword->w = s;
-		HASH_ADD_KEYPTR(hh, twords, utstring_body(aword->w), utstring_len(aword->w), aword);
+		aword->s = utstring_body(s);
+		HASH_ADD_KEYPTR(hh2, twords, aword->s, strlen(aword->s), aword);
 		return;
 	}
 	else{
