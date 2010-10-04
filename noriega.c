@@ -39,6 +39,9 @@ enum pres {BOTH, HIST, TEST}; /*where is the word?*/
 word *words = NULL; /*main stats*/
 word *twords = NULL; /*temp stats*/
 
+void hash_update();
+void temp_hash_update(char*,int);
+
 int main(int argc, char *argv[]){
 	if(argc != 1){
 		printf("usage: \n\tnoriega filelist\n");
@@ -89,9 +92,9 @@ int main(int argc, char *argv[]){
 				cw->h,
 				cw->t,
 				cw->occ,
-				ustring_body(cw->w));
+				utstring_body(cw->w));
 		HASH_DEL(words, cw);
-		ustring_free(cw->w);
+		utstring_free(cw->w);
 		free(cw);
 	}
 
@@ -103,19 +106,20 @@ void hash_update(){
 	while (twords){
 		cw = twords;
 		word *tw;
-		if(HASH_FIND_STR(words, ustring_body(cw->w), tw)){
+		HASH_FIND_STR(words, utstring_body(cw->w), tw);
+		if(tw){
 			/*exists; update it*/
 			if(cw->h && cw->t) tw->ht += 1;
 			else if (cw->h) tw->h += 1;
 			else if (cw->t) tw->t += 1;
 			tw->occ += cw->occ;
 			HASH_DEL(twords, cw);
-			ustring_free(cw->w);
+			utstring_free(cw->w);
 			free(cw);
 		}
 		else {
 			/*not there; add it*/
-			HASH_ADD_STR(words, ustring_body(cw->w), cw);
+			HASH_ADD_KEYPTR(hh, words, utstring_body(cw->w), utstring_len(cw->w), cw);
 			if(cw->h && cw->t) {
 				cw->ht = 1;
 				cw->h = 0;
@@ -135,20 +139,20 @@ void temp_hash_update(char* w, int stat){
 	if(aword == NULL){
 		/*didn't have it; create it*/
 		aword = malloc(sizeof(word));
-		if(state == HIST) aword->h = 1;
-		if(state == TEST) aword->t = 1;
+		if(stat == HIST) aword->h = 1;
+		if(stat == TEST) aword->t = 1;
 		aword->occ = 1;
 		UT_string *s;
 		utstring_new(s);
 		utstring_printf(s, "%s", w);
 		aword->w = s;
-		HASH_ADD_STR(twords, w, aword);
+		HASH_ADD_KEYPTR(hh, twords, utstring_body(aword->w), utstring_len(aword->w), aword);
 		return;
 	}
 	else{
 		/*it exists; update it*/
-		if(state == HIST) aword->h = 1;
-		if(state == TEST) aword->t = 1;
+		if(stat == HIST) aword->h = 1;
+		if(stat == TEST) aword->t = 1;
 		aword->occ = aword->occ + 1;
 		return;
 	}
