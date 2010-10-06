@@ -75,20 +75,22 @@ int main(int argc, char *argv[]){
 
 		fgets(line, LINE_SIZE, article);
 		char *tw;
-		tw = strtok(line, " ,.\":;!?");
+		tw = strtok(line, " ,.\":;!?\n\t");
 		do {
 			wordcount++;
+			/*No capital letter words.*/
+			if(tw[0] >= 'A' || tw[0] <= 'Z') continue;
 			temp_hash_update(tw, HIST);
-		} while((tw = strtok(NULL, " ,.\":;!?")) != NULL);
+		} while((tw = strtok(NULL, " ,.\":;!?\n\t")) != NULL);
 
 		while(!feof(article)){
 			fgets(line, LINE_SIZE, article);
-			tw = strtok(line, " ,.\":;!?");
+			tw = strtok(line, " ,.\":;!?\n\t");
 			do {
-			if(tw == "\n") continue;
+			if(tw == NULL || !strcmp(tw, "\n")) continue;
 			wordcount++;
 			temp_hash_update(tw, TEST);
-			} while((tw = strtok(NULL, " ,.\":;!?")) != NULL);
+			} while((tw = strtok(NULL, " ,.\":;!?\n\t")) != NULL);
 		}
 		/*finished the article.*/
 		fclose(article);
@@ -100,7 +102,7 @@ int main(int argc, char *argv[]){
 	word *cw;
 	while(words){
 		cw = words;
-		double posapp = (0 != cw->h + cw->ht ) ? cw->ht / (cw->h + cw->ht) : -1;
+		double posapp = (0 != cw->h + cw->ht ) ? (double)cw->ht / (double)(cw->h + cw->ht) : -1;
 		double prior = (double)cw->occ / wordcount;
 		double ec = (0 != posapp) ? prior / posapp : -1;
 		printf("%.10f\t%.8f\t%.8f\t%u\t%u\t%u\t%u\t%s\n",
