@@ -105,7 +105,10 @@ int main(int argc, char *argv[]){
 		double posapp = (0 != cw->h + cw->ht ) ? (double)cw->ht / (double)(cw->h + cw->ht) : -1;
 		double prior = (double)cw->occ / wordcount;
 		double ec = (0 != posapp) ? prior / posapp : -1;
-		printf("%.10f\t%.8f\t%.8f\t%u\t%u\t%u\t%u\t%s\n",
+		double newec = ec * prior;
+		if(-1 != ec) {
+			printf("%.10f\t%.10f\t%.8f\t%.8f\t%u\t%u\t%u\t%u\t%s\n",
+				newec,
 				ec,
 				posapp,
 				prior,
@@ -114,6 +117,7 @@ int main(int argc, char *argv[]){
 				cw->t,
 				cw->occ,
 				cw->s);
+		}
 		HASH_DEL(words, cw);
 		utstring_free(cw->w);
 		free(cw);
