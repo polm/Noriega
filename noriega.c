@@ -89,6 +89,8 @@ int main(int argc, char *argv[]){
 			do {
 			if(tw == NULL || !strcmp(tw, "\n")) continue;
 			wordcount++;
+			/*No capital letter words.*/
+			if(tw[0] >= 'A' || tw[0] <= 'Z') continue;
 			temp_hash_update(tw, TEST);
 			} while((tw = strtok(NULL, " ,.\":;!?\n\t")) != NULL);
 		}
