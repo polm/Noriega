@@ -78,10 +78,6 @@ int main(int argc, char *argv[]){
 		tw = strtok(line, " ,.\":;!?\n\t");
 		do {
 			wordcount++;
-			/*No capital letter words.*/
-			if(tw[0] >= 'A' && tw[0] <= 'Z') continue;
-			/*No numbers.*/
-			if(tw[strlen(tw)] >= '0' && tw[strlen(tw)] <= '9') continue;
 			temp_hash_update(tw, HIST);
 		} while((tw = strtok(NULL, " ,.\":;!?\n\t")) != NULL);
 
@@ -91,10 +87,6 @@ int main(int argc, char *argv[]){
 			do {
 			if(tw == NULL || !strcmp(tw, "\n")) continue;
 			wordcount++;
-			/*No capital letter words.*/
-			if(tw[0] >= 'A' && tw[0] <= 'Z') continue;
-			/*No numbers.*/
-			if(tw[strlen(tw)] >= '0' && tw[strlen(tw)] <= '9') continue;
 			temp_hash_update(tw, TEST);
 			} while((tw = strtok(NULL, " ,.\":;!?\n\t")) != NULL);
 		}
@@ -169,6 +161,11 @@ void temp_hash_update(char* w, int stat){
 	HASH_FIND(hh2, twords, w, strlen(w), aword);
 	if(aword == NULL){
 		/*didn't have it; create it*/
+		/*No capital letter words.*/
+		if(w[0] >= 'A' && w[0] <= 'Z') return;
+		/*No numbers.*/
+		if(w[strlen(w)] >= '0' && w[strlen(w)] <= '9') return;
+
 		aword = malloc(sizeof(word));
 		if(stat == HIST) aword->h = 1;
 		if(stat == TEST) aword->t = 1;
