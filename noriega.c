@@ -79,7 +79,9 @@ int main(int argc, char *argv[]){
 		do {
 			wordcount++;
 			/*No capital letter words.*/
-			if(tw[0] >= 'A' || tw[0] <= 'Z') continue;
+			if(tw[0] >= 'A' && tw[0] <= 'Z') continue;
+			/*No numbers.*/
+			if(tw[strlen(tw)] >= '0' && tw[strlen(tw)] <= '9') continue;
 			temp_hash_update(tw, HIST);
 		} while((tw = strtok(NULL, " ,.\":;!?\n\t")) != NULL);
 
@@ -90,7 +92,9 @@ int main(int argc, char *argv[]){
 			if(tw == NULL || !strcmp(tw, "\n")) continue;
 			wordcount++;
 			/*No capital letter words.*/
-			if(tw[0] >= 'A' || tw[0] <= 'Z') continue;
+			if(tw[0] >= 'A' && tw[0] <= 'Z') continue;
+			/*No numbers.*/
+			if(tw[strlen(tw)] >= '0' && tw[strlen(tw)] <= '9') continue;
 			temp_hash_update(tw, TEST);
 			} while((tw = strtok(NULL, " ,.\":;!?\n\t")) != NULL);
 		}
@@ -102,14 +106,14 @@ int main(int argc, char *argv[]){
 	/*cleanup*/
 	fclose(file);
 	word *cw;
+	printf("Ouput time!\n");
 	while(words){
 		cw = words;
 		double posapp = (0 != cw->h + cw->ht ) ? (double)cw->ht / (double)(cw->h + cw->ht) : -1;
 		double prior = (double)cw->occ / wordcount;
 		double ec = (0 != posapp) ? prior / posapp : -1;
-		double newec = ec * prior;
-		if(-1 != ec) {
-			printf("%.10f\t%.10f\t%.8f\t%.8f\t%u\t%u\t%u\t%u\t%s\n",
+		double newec = (-1 != ec) ? ec * prior : -1;
+		printf("%.10f\t%.10f\t%.8f\t%.8f\t%u\t%u\t%u\t%u\t%s\n",
 				newec,
 				ec,
 				posapp,
@@ -119,7 +123,6 @@ int main(int argc, char *argv[]){
 				cw->t,
 				cw->occ,
 				cw->s);
-		}
 		HASH_DEL(words, cw);
 		utstring_free(cw->w);
 		free(cw);
