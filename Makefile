@@ -1,5 +1,5 @@
 noriega: noriega.c
-	gcc -o noriega noriega.c -lWN -L/usr/local/wn/lib
+	gcc -o noriega noriega.c 
 
 all: noriega
 	echo "Done!"
