@@ -6,7 +6,7 @@
 
 #define LINE_SIZE 10240 /*bigger than this is a problem for various reasons*/
 
-#define PUNCTUATION " ,.\":;!?\n\t"
+#define PUNCTUATION " ,.\":;!?\n\t()"
 
 typedef struct word word;
 struct word {

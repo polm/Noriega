@@ -5,5 +5,5 @@ all: noriega
 	echo "Done!"
 
 clean:
-	rm noriega noriega.o *~
+	rm -f noriega noriega.o *~
 
