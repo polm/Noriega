@@ -3,7 +3,6 @@
 #include <string.h>
 #include "uthash.h"
 #include "utstring.h"
-#include "wn.h"
 
 #define LINE_SIZE 10240 /*bigger than this is a problem for various reasons*/
 
@@ -60,7 +59,6 @@ int main(int argc, char *argv[]){
 	}
 
 	word *allwords = NULL; /*prime hash*/
-	wninit(); /*Initialize WordNet*/
 	char line[LINE_SIZE]; 
 	unsigned int filecount = 0;
 	unsigned int wordcount = 0;
@@ -169,8 +167,6 @@ void temp_hash_update(char* w, int stat){
 		if(w[0] >= 'A' && w[0] <= 'Z') return;
 		/*No numbers.*/
 		if(w[strlen(w)-1] >= '0' && w[strlen(w)-1] <= '9') return;
-		/*No nouns.*/
-		if(in_wn(w, NOUN)) return; 
 
 		aword = malloc(sizeof(word));
 		if(stat == HIST) aword->h = 1;

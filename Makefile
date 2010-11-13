@@ -1,9 +1,9 @@
-noriegac: noriega.c
-	gcc -o noriegac noriega.c -lWN -L/usr/local/wn/lib
+noriega: noriega.c
+	gcc -o noriega noriega.c -lWN -L/usr/local/wn/lib
 
-all: noriegac
+all: noriega
 	echo "Done!"
 
 clean:
-	rm noriegac noriega.o *~
+	rm noriega noriega.o *~
 
