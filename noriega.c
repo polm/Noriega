@@ -7,6 +7,8 @@
 
 #define LINE_SIZE 10240 /*bigger than this is a problem for various reasons*/
 
+#define PUNCTUATION " ,.\":;!?\n\t"
+
 typedef struct word word;
 struct word {
 	UT_string* w;
@@ -77,20 +79,20 @@ int main(int argc, char *argv[]){
 
 		fgets(line, LINE_SIZE, article);
 		char *tw;
-		tw = strtok(line, " ,.\":;!?\n\t");
+		tw = strtok(line, PUNCTUATION);
 		do {
 			wordcount++;
 			temp_hash_update(tw, HIST);
-		} while((tw = strtok(NULL, " ,.\":;!?\n\t")) != NULL);
+		} while((tw = strtok(NULL, PUNCTUATION)) != NULL);
 
 		while(!feof(article)){
 			fgets(line, LINE_SIZE, article);
-			tw = strtok(line, " ,.\":;!?\n\t");
+			tw = strtok(line, PUNCTUATION);
 			do {
 			if(tw == NULL || !strcmp(tw, "\n")) continue;
 			wordcount++;
 			temp_hash_update(tw, TEST);
-			} while((tw = strtok(NULL, " ,.\":;!?\n\t")) != NULL);
+			} while((tw = strtok(NULL, PUNCTUATION)) != NULL);
 		}
 		/*finished the article.*/
 		fclose(article);
@@ -100,7 +102,7 @@ int main(int argc, char *argv[]){
 	/*cleanup*/
 	fclose(file);
 	word *cw;
-	printf("Ouput time!\n");
+	printf("Output time!\n");
 	while(words){
 		cw = words;
 		double posapp = (0 != cw->h + cw->ht ) ? (double)cw->ht / (double)(cw->h + cw->ht) : -1;
