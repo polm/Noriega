@@ -58,20 +58,20 @@ int main(int argc, char *argv[]){
 		exit(1);
 	}
 
-	word *allwords = NULL; /*prime hash*/
 	char line[LINE_SIZE]; 
 	unsigned int filecount = 0;
 	unsigned int wordcount = 0;
 	while(1){ /*filename getting loop*/
 		if(feof(file)) break;
+		memset(line, 0, LINE_SIZE);
 		fgets(line, LINE_SIZE, file);
 		line[strlen(line)-1] = '\0'; /*nuke newlines*/
-		//printf("file:%s\n", line);
 		FILE *article = fopen (line, "r");
 		filecount++;
 		if(article == NULL){
+			if(line[0] == '\0'){continue;} /*harmless*/
 			perror("Problem opening article!");
-			continue;
+			continue; 
 		}
 		/*OK, do the article now*/
 
@@ -159,6 +159,7 @@ void hash_update(){
 void temp_hash_update(char* w, int stat){
 	/*is this word in the hash?*/
 	word *aword;
+	if(!w) return; /*NULL is bad.*/
 
 	HASH_FIND(hh2, twords, w, strlen(w), aword);
 	if(aword == NULL){
