@@ -6,6 +6,8 @@
 
 #define LINE_SIZE 10240 /*bigger than this is a problem for various reasons*/
 
+#define HISTSIZE 100 /*how many lines is the history?*/
+
 #define PUNCTUATION " ,.\":;!?\n\t()"
 
 typedef struct word word;
@@ -45,6 +47,11 @@ word *twords = NULL; /*temp stats*/
 
 void hash_update();
 void temp_hash_update(char*,int);
+void feed(char*,FILE*);
+char *nextword(char*);
+int wc(char*);
+char **sentarray(char*);
+void clean(char**);
 
 int main(int argc, char *argv[]){
 	if(argc != 2){
@@ -63,9 +70,7 @@ int main(int argc, char *argv[]){
 	unsigned int wordcount = 0;
 	while(1){ /*filename getting loop*/
 		if(feof(file)) break;
-		memset(line, 0, LINE_SIZE);
-		fgets(line, LINE_SIZE, file);
-		line[strlen(line)-1] = '\0'; /*nuke newlines*/
+		feed(line,file);
 		FILE *article = fopen (line, "r");
 		filecount++;
 		if(article == NULL){
@@ -75,22 +80,17 @@ int main(int argc, char *argv[]){
 		}
 		/*OK, do the article now*/
 
-		fgets(line, LINE_SIZE, article);
-		char *tw;
-		tw = strtok(line, PUNCTUATION);
-		do {
-			wordcount++;
-			temp_hash_update(tw, HIST);
-		} while((tw = strtok(NULL, PUNCTUATION)) != NULL);
-
+		int linecount = 0;
 		while(!feof(article)){
-			fgets(line, LINE_SIZE, article);
-			tw = strtok(line, PUNCTUATION);
-			do {
-			if(tw == NULL || !strcmp(tw, "\n")) continue;
-			wordcount++;
-			temp_hash_update(tw, TEST);
-			} while((tw = strtok(NULL, PUNCTUATION)) != NULL);
+
+			feed(line,article);
+			char **words = sentarray(line);
+			int i;
+			for(i=0;words[i]!=NULL;i++){
+				wordcount++;
+				temp_hash_update(words[i], 
+						linecount < HISTSIZE ? HIST : TEST);
+			}
 		}
 		/*finished the article.*/
 		fclose(article);
@@ -190,3 +190,51 @@ void temp_hash_update(char* w, int stat){
 	}
 
 }
+
+void feed(char *buf, FILE *file){
+        /*get the next line and clean it*/
+        memset(buf, 0, LINE_SIZE);
+        fgets(buf, LINE_SIZE, file);
+        buf[strlen(buf)-1] = '\0'; /*nuke newlines*/
+}
+
+char *nextword(char *s){
+        //returns the first string before a space (or \0) in the string.
+        if(!s || s[0] == '\0') return NULL;
+        char *back = strchr(s, ' ');
+        if(back == s) return NULL;
+        if(!back) return strdup(s);
+        return strndup(s, back-s);
+}
+
+int wordcount(char* line){
+        int count = 1;
+        int i=0;                                                                                                             
+        while (line[i]){                                                                                                     
+                if(line[i] == ' ') count++;
+                i++;
+        }
+        return count;
+}
+
+char **sentarray(char *line){
+        if(!line || !line[0]) return NULL;
+        int wc = wordcount(line);
+        char **arr = malloc(sizeof(char*)*(wc+1));
+        memset(arr, 0, sizeof(char*)*(wc+1));
+        int i;
+        for(i=0;i<wc;i++){
+                arr[i] = nextword(line);
+                line += 1 + strlen(arr[i]);
+        }
+        return arr;
+}
+
+void clean(char **words){
+        int i;
+        for(i=0; words[i]!=NULL; i++){
+                free(words[i]);
+        }
+        free(words);
+}
+
