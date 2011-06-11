@@ -46,7 +46,7 @@ word *twords = NULL; /*temp stats*/
 
 void hash_update();
 void temp_hash_update(char*,int);
-void feed(char*);
+void feed(char*,FILE*);
 
 int main(int argc, char *argv[]){
 	if(argc != 2){
