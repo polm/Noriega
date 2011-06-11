@@ -1,1 +1,36 @@
-Typical usage is covered by noriega.sh assuming the binary is in your path. -POLM
+                  _                  
+ _ __   ___  _ __(_) ___  __ _  __ _ 
+| '_ \ / _ \| '__| |/ _ \/ _` |/ _` |
+| | | | (_) | |  | |  __/ (_| | (_| |
+|_| |_|\___/|_|  |_|\___|\__, |\__,_|
+                         |___/       
+
+=====================================
+
+=USAGE
+
+Typical usage is covered by noriega.sh assuming the "noriega" binary is in your
+path. Pass it a folder containing articles, one per file, one paragraph per
+line. The output will display words sorted such that (for English) "the" should
+be at the top, and the following words should be relatively non-specific given
+your corpus. 
+
+This uses the techniques outlined in "Chance of Two Noriegas" by Church [1],
+but instead of finding topic words it finds what should be anti-topic words.
+The theory is that this will be useful in building stop word lists. Given the
+conclusion in the paper that the size of the division between the front and
+back half of an article mattered little, the front is defined here as the first
+paragraph.
+
+=TODO
+
+Should be more flexible about file structure.
+
+Should include a corpus to test on. 
+
+Since this is based on word position and frequency it should work for any
+language with reasonable word divisions, though it may help to stem words. 
+
+-POLM
+
+1. (PDF) http://www.aclweb.org/anthology/C00-1027
