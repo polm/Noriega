@@ -46,6 +46,7 @@ word *twords = NULL; /*temp stats*/
 
 void hash_update();
 void temp_hash_update(char*,int);
+void feed(char*);
 
 int main(int argc, char *argv[]){
 	if(argc != 2){
@@ -64,9 +65,8 @@ int main(int argc, char *argv[]){
 	unsigned int wordcount = 0;
 	while(1){ /*filename getting loop*/
 		if(feof(file)) break;
-		fgets(line, LINE_SIZE, file);
-		line[strlen(line)-1] = '\0'; /*nuke newlines*/
-		//printf("file:%s\n", line);
+		feed(line, file);
+
 		FILE *article = fopen (line, "r");
 
 		if(article == NULL){
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]){
 		}
 		/*OK, do the article now*/
 
-		fgets(line, LINE_SIZE, article);
+		feed(line, article);
 		char *tw;
 		tw = strtok(line, PUNCTUATION);
 		do {
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]){
 		} while((tw = strtok(NULL, PUNCTUATION)) != NULL);
 
 		while(!feof(article)){
-			fgets(line, LINE_SIZE, article);
+			feed(line, article);
 			tw = strtok(line, PUNCTUATION);
 			do {
 			if(tw == NULL || !strcmp(tw, "\n")) continue;
@@ -185,4 +185,11 @@ void temp_hash_update(char* w, int stat){
 		return;
 	}
 
+}
+
+void feed(char *buf, FILE *file){
+        /*get the next line and clean it*/
+        memset(buf, 0, LINE_SIZE);
+        fgets(buf, LINE_SIZE, file);
+        buf[strlen(buf)-1] = '\0'; /*nuke newlines*/
 }
