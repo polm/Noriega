@@ -47,9 +47,11 @@ word *twords = NULL; /*temp stats*/
 
 void hash_update();
 void temp_hash_update(char*,int);
+
+/*Utility Functions*/
 void feed(char*,FILE*);
 char *nextword(char*);
-int wc(char*);
+int countwords(char*);
 char **sentarray(char*);
 void clean(char**);
 
@@ -85,12 +87,15 @@ int main(int argc, char *argv[]){
 
 			feed(line,article);
 			char **words = sentarray(line);
+			if(!words) continue;
 			int i;
 			for(i=0;words[i]!=NULL;i++){
 				wordcount++;
 				temp_hash_update(words[i], 
 						linecount < HISTSIZE ? HIST : TEST);
 			}
+			clean(words);
+			linecount++;
 		}
 		/*finished the article.*/
 		fclose(article);
@@ -107,10 +112,12 @@ int main(int argc, char *argv[]){
 		double prior = (double)cw->occ / wordcount;
 		double ec = (0 != posapp) ? prior / posapp : -1;
 		double newec = (-1 != ec) ? ec * prior : -1;
-		printf("%.10f\t%.10f\t%.8f\t%.8f\t%u\t%u\t%u\t%u\t%s\n",
+		double negapp = (double)cw->t / (filecount - cw->h - cw->ht);
+		printf("%.10f\t%.10f\t%.8f\t%.8f\t%.8f\t%u\t%u\t%u\t%u\t%s\n",
 				newec,
 				ec,
 				posapp,
+				negapp,
 				prior,
 				cw->ht,
 				cw->h,
@@ -165,7 +172,7 @@ void temp_hash_update(char* w, int stat){
 	if(aword == NULL){
 		/*didn't have it; create it*/
 		/*No capital letter words.*/
-		if(w[0] >= 'A' && w[0] <= 'Z') return;
+		/*if(w[0] >= 'A' && w[0] <= 'Z') return;*/
 		/*No numbers.*/
 		if(w[strlen(w)-1] >= '0' && w[strlen(w)-1] <= '9') return;
 
@@ -207,7 +214,8 @@ char *nextword(char *s){
         return strndup(s, back-s);
 }
 
-int wordcount(char* line){
+int countwords(char* line){
+	/*number of words is number of spaces +1*/
         int count = 1;
         int i=0;                                                                                                             
         while (line[i]){                                                                                                     
@@ -219,7 +227,7 @@ int wordcount(char* line){
 
 char **sentarray(char *line){
         if(!line || !line[0]) return NULL;
-        int wc = wordcount(line);
+        int wc = countwords(line);
         char **arr = malloc(sizeof(char*)*(wc+1));
         memset(arr, 0, sizeof(char*)*(wc+1));
         int i;
