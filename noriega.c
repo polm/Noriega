@@ -10,10 +10,14 @@
 typedef struct word word;
 struct word {
 	char* s;
+	/*How many times does this word appear in the first half ("history"/h),
+	 * second half ("test"/t),
+	 * both, or neither?*/
 	unsigned int ht;
 	unsigned int t;
 	unsigned int h;
 	/*it won't be checked for articles it doesn't appear in*/
+	/*occurrence - word count*/
 	unsigned int occ; /*will not overflow - GIGAword*/
 	UT_hash_handle hh;
 	UT_hash_handle hh2; /*for the temp*/
@@ -100,6 +104,7 @@ int main(int argc, char *argv[]){
 	/*cleanup*/
 	fclose(file);
 	word *cw;
+	/*output*/
 	while(words){
 		cw = words;
 		double posapp = (0 != cw->h + cw->ht ) ? (double)cw->ht / (double)(cw->h + cw->ht) : -1;
