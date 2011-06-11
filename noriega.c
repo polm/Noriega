@@ -22,6 +22,9 @@ struct word {
 
 /*Strategy:
  *
+ * Two hashes: the temporary one for the current article, and 
+ * the main one for all the articles together.
+ *
  * Get file with one filename per line
  * While not EOF get next file and:
  * 	create temp hash
@@ -123,6 +126,7 @@ int main(int argc, char *argv[]){
 }
 
 void hash_update(){
+	/*move words from the temporary hash to the permanent hash*/
 	word *cw;
 	while (twords){
 		cw = twords;
