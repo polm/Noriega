@@ -100,7 +100,6 @@ int main(int argc, char *argv[]){
 	/*cleanup*/
 	fclose(file);
 	word *cw;
-	printf("Output time!\n");
 	while(words){
 		cw = words;
 		double posapp = (0 != cw->h + cw->ht ) ? (double)cw->ht / (double)(cw->h + cw->ht) : -1;
