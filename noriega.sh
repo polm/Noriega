@@ -4,5 +4,6 @@
 find "$1" -type f > /tmp/noriega.files.$$
 noriega /tmp/noriega.files.$$ | \
 sort -n -r
+rm -r /tmp/noriega.files.$$
 
 
