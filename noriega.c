@@ -6,8 +6,6 @@
 
 #define LINE_SIZE 10240 /*bigger than this is a problem for various reasons*/
 
-#define HISTSIZE 100 /*how many lines is the history?*/
-
 #define PUNCTUATION " ,.\":;!?\n\t()"
 
 typedef struct word word;
@@ -48,13 +46,6 @@ word *twords = NULL; /*temp stats*/
 void hash_update();
 void temp_hash_update(char*,int);
 
-/*Utility Functions*/
-void feed(char*,FILE*);
-char *nextword(char*);
-int countwords(char*);
-char **sentarray(char*);
-void clean(char**);
-
 int main(int argc, char *argv[]){
 	if(argc != 2){
 		printf("usage: \n\tnoriega filelist\n");
@@ -67,35 +58,39 @@ int main(int argc, char *argv[]){
 		exit(1);
 	}
 
+	word *allwords = NULL; /*prime hash*/
 	char line[LINE_SIZE]; 
 	unsigned int filecount = 0;
 	unsigned int wordcount = 0;
 	while(1){ /*filename getting loop*/
 		if(feof(file)) break;
-		feed(line,file);
+		fgets(line, LINE_SIZE, file);
+		line[strlen(line)-1] = '\0'; /*nuke newlines*/
+		//printf("file:%s\n", line);
 		FILE *article = fopen (line, "r");
 		filecount++;
 		if(article == NULL){
-			if(line[0] == '\0'){continue;} /*harmless*/
 			perror("Problem opening article!");
-			continue; 
+			continue;
 		}
 		/*OK, do the article now*/
 
-		int linecount = 0;
-		while(!feof(article)){
+		fgets(line, LINE_SIZE, article);
+		char *tw;
+		tw = strtok(line, PUNCTUATION);
+		do {
+			wordcount++;
+			temp_hash_update(tw, HIST);
+		} while((tw = strtok(NULL, PUNCTUATION)) != NULL);
 
-			feed(line,article);
-			char **words = sentarray(line);
-			if(!words) continue;
-			int i;
-			for(i=0;words[i]!=NULL;i++){
-				wordcount++;
-				temp_hash_update(words[i], 
-						linecount < HISTSIZE ? HIST : TEST);
-			}
-			clean(words);
-			linecount++;
+		while(!feof(article)){
+			fgets(line, LINE_SIZE, article);
+			tw = strtok(line, PUNCTUATION);
+			do {
+			if(tw == NULL || !strcmp(tw, "\n")) continue;
+			wordcount++;
+			temp_hash_update(tw, TEST);
+			} while((tw = strtok(NULL, PUNCTUATION)) != NULL);
 		}
 		/*finished the article.*/
 		fclose(article);
@@ -105,19 +100,17 @@ int main(int argc, char *argv[]){
 	/*cleanup*/
 	fclose(file);
 	word *cw;
-	//printf("Output time!\n");
+	printf("Output time!\n");
 	while(words){
 		cw = words;
 		double posapp = (0 != cw->h + cw->ht ) ? (double)cw->ht / (double)(cw->h + cw->ht) : -1;
 		double prior = (double)cw->occ / wordcount;
 		double ec = (0 != posapp) ? prior / posapp : -1;
 		double newec = (-1 != ec) ? ec * prior : -1;
-		double negapp = (double)cw->t / (filecount - cw->h - cw->ht);
-		printf("%.10f\t%.10f\t%.8f\t%.8f\t%.8f\t%u\t%u\t%u\t%u\t%s\n",
+		printf("%.10f\t%.10f\t%.8f\t%.8f\t%u\t%u\t%u\t%u\t%s\n",
 				newec,
 				ec,
 				posapp,
-				negapp,
 				prior,
 				cw->ht,
 				cw->h,
@@ -166,13 +159,12 @@ void hash_update(){
 void temp_hash_update(char* w, int stat){
 	/*is this word in the hash?*/
 	word *aword;
-	if(!w) return; /*NULL is bad.*/
 
 	HASH_FIND(hh2, twords, w, strlen(w), aword);
 	if(aword == NULL){
 		/*didn't have it; create it*/
 		/*No capital letter words.*/
-		/*if(w[0] >= 'A' && w[0] <= 'Z') return;*/
+		if(w[0] >= 'A' && w[0] <= 'Z') return;
 		/*No numbers.*/
 		if(w[strlen(w)-1] >= '0' && w[strlen(w)-1] <= '9') return;
 
@@ -197,52 +189,3 @@ void temp_hash_update(char* w, int stat){
 	}
 
 }
-
-void feed(char *buf, FILE *file){
-        /*get the next line and clean it*/
-        memset(buf, 0, LINE_SIZE);
-        fgets(buf, LINE_SIZE, file);
-        buf[strlen(buf)-1] = '\0'; /*nuke newlines*/
-}
-
-char *nextword(char *s){
-        //returns the first string before a space (or \0) in the string.
-        if(!s || s[0] == '\0') return NULL;
-        char *back = strchr(s, ' ');
-        if(back == s) return NULL;
-        if(!back) return strdup(s);
-        return strndup(s, back-s);
-}
-
-int countwords(char* line){
-	/*number of words is number of spaces +1*/
-        int count = 1;
-        int i=0;                                                                                                             
-        while (line[i]){                                                                                                     
-                if(line[i] == ' ') count++;
-                i++;
-        }
-        return count;
-}
-
-char **sentarray(char *line){
-        if(!line || !line[0]) return NULL;
-        int wc = countwords(line);
-        char **arr = malloc(sizeof(char*)*(wc+1));
-        memset(arr, 0, sizeof(char*)*(wc+1));
-        int i;
-        for(i=0;i<wc;i++){
-                arr[i] = nextword(line);
-                line += 1 + strlen(arr[i]);
-        }
-        return arr;
-}
-
-void clean(char **words){
-        int i;
-        for(i=0; words[i]!=NULL; i++){
-                free(words[i]);
-        }
-        free(words);
-}
-
