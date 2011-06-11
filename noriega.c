@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "uthash.h"
-#include "utstring.h"
 
 #define LINE_SIZE 10240 /*bigger than this is a problem for various reasons*/
 
@@ -10,7 +9,6 @@
 
 typedef struct word word;
 struct word {
-	UT_string* w;
 	char* s;
 	unsigned int ht;
 	unsigned int t;
@@ -60,7 +58,6 @@ int main(int argc, char *argv[]){
 
 	word *allwords = NULL; /*prime hash*/
 	char line[LINE_SIZE]; 
-	unsigned int filecount = 0;
 	unsigned int wordcount = 0;
 	while(1){ /*filename getting loop*/
 		if(feof(file)) break;
@@ -68,7 +65,7 @@ int main(int argc, char *argv[]){
 		line[strlen(line)-1] = '\0'; /*nuke newlines*/
 		//printf("file:%s\n", line);
 		FILE *article = fopen (line, "r");
-		filecount++;
+
 		if(article == NULL){
 			perror("Problem opening article!");
 			continue;
@@ -118,7 +115,7 @@ int main(int argc, char *argv[]){
 				cw->occ,
 				cw->s);
 		HASH_DEL(words, cw);
-		utstring_free(cw->w);
+		free(cw->s);
 		free(cw);
 	}
 
@@ -138,7 +135,7 @@ void hash_update(){
 			else if (cw->t) tw->t += 1;
 			tw->occ += cw->occ;
 			HASH_DELETE(hh2, twords, cw);
-			utstring_free(cw->w);
+			free(cw->s);
 			free(cw);
 		}
 		else {
@@ -172,11 +169,7 @@ void temp_hash_update(char* w, int stat){
 		if(stat == HIST) aword->h = 1;
 		if(stat == TEST) aword->t = 1;
 		aword->occ = 1;
-		UT_string *s;
-		utstring_new(s);
-		utstring_printf(s, "%s", w);
-		aword->w = s;
-		aword->s = utstring_body(s);
+		aword->s = strdup(w);
 		HASH_ADD_KEYPTR(hh2, twords, aword->s, strlen(aword->s), aword);
 		return;
 	}
